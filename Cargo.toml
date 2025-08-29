@@ -1,0 +1,24 @@
+[workspace.package]
+edition = "2021"
+rust-version = "1.88"
+
+
+[workspace.lints]
+rust.missing_docs = "warn"
+
+[workspace]
+members = [
+	"apps/reshard/app",
+	"apps/reshard/host",
+	"common/host_primitives",
+]
+
+resolver = "2"
+
+[workspace.dependencies]
+qos_core = { git = "https://github.com/tkhq/qos.git", rev = "38db2841cae036eefce0dcb6d0cca80f93a91e98", default-features = false }
+
+tonic = { version = "0.14", default-features = false }
+prost = { version = "0.14", default-features = false }
+borsh = { version = "1.5", default-features = false}
+tokio = { version = "1.47" }
