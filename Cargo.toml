@@ -2,14 +2,11 @@
 edition = "2021"
 rust-version = "1.88"
 
-
 [workspace.lints]
 rust.missing_docs = "warn"
 
 [workspace]
 members = [
-	"apps/reshard/app",
-	"apps/reshard/host",
 	"common/host_primitives",
 ]
 
