@@ -1,0 +1,16 @@
+[package]
+name = "host_primitives"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+qos_core = { workspace = true }
+
+tonic = { workspace = true }
+prost = { workspace = true, features = ["derive", "std"] }
+borsh = { workspace = true, features = ["std", "derive"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "signal"] }
