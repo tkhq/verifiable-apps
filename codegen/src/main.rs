@@ -9,13 +9,14 @@ fn main() {
     let crate_root = PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
     let repo_root = crate_root.parent().unwrap();
 
-    codegen(
-        &repo_root.join("common").join("health_check"),
-        &["proto/health.proto"],
-        &["proto"],
-        true,
-        false
-    )
+    // Example of how to do codegen (we can remove this once we actually have code to generate)
+    // codegen(
+    //     &repo_root.join("common").join("health_check"),
+    //     &["proto/health.proto"],
+    //     &["proto"],
+    //     true,
+    //     false
+    // )
 }
 
 fn codegen(
