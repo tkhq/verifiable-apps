@@ -6,5 +6,8 @@ publish = false
 
 [dependencies]
 tonic   = { workspace = true, features = ["codegen", "transport"]}
+tokio   = { workspace = true }
 prost = { workspace = true, features = ["derive", "std"] }
 tonic-prost = { workspace = true }
+host_primitives = { workspace = true }
+reshard_app = { workspace = true }

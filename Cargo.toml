@@ -36,3 +36,4 @@ qos_nsm = { git = "https://github.com/tkhq/qos.git", rev = "38db2841cae036eefce0
 # Local
 host_primitives = { path = "common/host_primitives" }
 codegen = { path = "common/codegen" }
+reshard_app = { path = "apps/reshard/app" }

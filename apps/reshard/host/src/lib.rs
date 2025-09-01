@@ -7,3 +7,5 @@ pub mod generated {
 
     pub const FILE_DESCRIPTOR_SET: &[u8] = std::include_bytes!("generated/descriptor.bin");
 }
+
+mod host;

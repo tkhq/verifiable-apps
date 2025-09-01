@@ -11,6 +11,7 @@ use qos_nsm::NsmProvider;
 use qos_p256::P256Public;
 
 use borsh::{from_slice, BorshDeserialize, BorshSerialize};
+use prost::Message;
 
 /// Signed, attested, and audit-friendly output of a resharding run.
 ///
@@ -75,7 +76,7 @@ pub struct ReshardBundle {
     pub signature: Vec<u8>,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Message)]
 pub enum ReshardRequest {
     RetrieveBundle,
     HealthRequest,
