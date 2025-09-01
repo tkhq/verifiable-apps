@@ -17,8 +17,7 @@ use borsh::{from_slice, BorshDeserialize, BorshSerialize};
 /// This bundle is what operators fetch after a successful reshard. It ties:
 /// - **what ran** (manifest + approvals),
 /// - **where/how it ran** (AWS Nitro attestation w/ ephemeral key),
-/// - **what it produced** (per-member encrypted shares),
-///     together with an **ephemeral-key signature** over the outputs.
+/// - **what it produced** (per-member encrypted shares), together with an **ephemeral-key signature** over the outputs.
 ///
 /// Safe to check into git alongside genesis artifacts.
 #[derive(
@@ -84,7 +83,7 @@ pub enum ReshardRequest {
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug)]
 pub enum ReshardResponse {
-    Bundle(ReshardBundle),
+    Bundle(Box<ReshardBundle>),
     Error,
     Health,
 }
@@ -191,7 +190,7 @@ impl RequestProcessor for ReshardProcessor {
             ReshardRequest::HealthRequest => ReshardResponse::Health,
 
             ReshardRequest::RetrieveBundle => {
-                ReshardResponse::Bundle(self.cached_reshard_bundle.clone())
+                ReshardResponse::Bundle(Box::new(self.cached_reshard_bundle.clone()))
             }
         };
 

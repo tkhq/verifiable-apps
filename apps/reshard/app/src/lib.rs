@@ -1,2 +1,2 @@
-mod service;
 pub mod cli;
+mod service;
