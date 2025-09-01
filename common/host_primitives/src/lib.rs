@@ -3,7 +3,7 @@
 use std::fmt::Debug;
 use std::sync::Arc;
 
-use borsh::BorshDeserialize;
+use borsh::{BorshDeserialize, BorshSerialize};
 use prost::Message;
 use qos_core::{
     io::{TimeVal, TimeValLike},
@@ -21,12 +21,50 @@ pub static ENCLAVE_QUEUE_CAPACITY: usize = 12;
 /// Maximum gRPC message size. Set to 25MB (25*1024*1024)
 pub static GRPC_MAX_RECV_MSG_SIZE: usize = 26_214_400;
 
+/// A type that can be encoded to bytes
+pub trait Encode<T> {
+    /// Encode `T` to bytes.
+    fn encode(value: &T) -> Vec<u8>;
+}
+
+/// A type that can be decoded from bytes.
+pub trait Decode<T> {
+    /// Decode `bytes` to `T`
+    fn decode(bytes: &[u8]) -> Result<T, ()>;
+}
+
+/// Borsh implementation for a [`Encode`] and [`Decode`]
+pub struct BorshCodec;
+
+impl<T: BorshSerialize> Encode<T> for BorshCodec {
+    fn encode(value: &T) -> Vec<u8> {
+        borsh::to_vec(value).expect("types encode to borsh")
+    }
+}
+
+impl<T: BorshDeserialize> Decode<T> for BorshCodec {
+    fn decode(bytes: &[u8]) -> Result<T, ()> {
+        borsh::from_slice(bytes).map_err(|_| ())
+    }
+}
+
+/// Protocol buffer implementation for a [`Encode`] and [`Decode`]
+pub struct ProstCodec;
+
+impl<T: Message> Encode<T> for ProstCodec {
+    fn encode(value: &T) -> Vec<u8> {
+        value.encode_to_vec()
+    }
+}
+
+impl<T: Message + Default> Decode<T> for ProstCodec {
+    fn decode(bytes: &[u8]) -> Result<T, ()> {
+        T::decode(bytes).map_err(|_| ())
+    }
+}
+
 /// Message sent over socket connection.
-pub struct EnclaveQueueMsg<Req, Resp>
-where
-    Resp: Message + Default,
-    Req: Message,
-{
+pub struct EnclaveQueueMsg<Req, Resp> {
     /// Channel to send response back.
     pub response_tx: tokio::sync::oneshot::Sender<Result<Resp, Status>>,
     /// The request message.
@@ -37,13 +75,12 @@ where
 ///
 /// You likely do not want to transform the error since we want to preserve the
 /// unavailable error code to indicate the enclave queue is full.
-pub async fn send_queue_msg<Req, Resp>(
+pub async fn send_queue_msg<Codec, Req, Resp>(
     request: Req,
     queue_tx: &tokio::sync::mpsc::Sender<Box<EnclaveQueueMsg<Req, Resp>>>,
 ) -> Result<Resp, tonic::Status>
 where
-    Resp: Message + Default,
-    Req: Message,
+    Codec: Encode<Req> + Decode<Resp>,
 {
     let (response_tx, response_rx) = tokio::sync::oneshot::channel();
 
@@ -65,16 +102,16 @@ where
 }
 
 /// Send a message to a secure app via QOS proxy.
-pub async fn send_proxy_request<Req, Resp>(
+pub async fn send_proxy_request<Codec, Req, Resp>(
     request: Req,
     client: Arc<qos_core::client::Client>,
 ) -> Result<Resp, tonic::Status>
 where
-    Resp: Message + Default + Debug + 'static,
-    Req: Message,
+    Resp: Send + 'static,
+    Codec: Encode<Req> + Decode<Resp>,
 {
     let qos_request = ProtocolMsg::ProxyRequest {
-        data: request.encode_to_vec(),
+        data: Codec::encode(&request),
     };
 
     // We use spawn_blocking here because `qos_core::client::Client::send` is blocking
@@ -98,7 +135,7 @@ where
             }
         };
 
-        let response = Resp::decode(&*encoded_app_response)
+        let response = Codec::decode(&*encoded_app_response)
             .map_err(|e| Status::internal(format!("Failed to decode app response: {e:?}")))?;
 
         Ok(response)
@@ -110,12 +147,13 @@ where
 }
 
 /// Spawn a consumer task to read from the enclave message queue and send messages to the enclave.
-pub fn spawn_queue_consumer<Req, Resp>(
+pub fn spawn_queue_consumer<Codec, Req, Resp>(
     enclave_addr: qos_core::io::SocketAddress,
     mut queue_rx: tokio::sync::mpsc::Receiver<Box<EnclaveQueueMsg<Req, Resp>>>,
 ) where
-    Resp: Message + Default + Debug + 'static,
-    Req: Message + 'static,
+    Resp: Send + Debug + 'static,
+    Req: Send + 'static,
+    Codec: Encode<Req> + Decode<Resp>,
 {
     tokio::task::spawn(async move {
         let client = Arc::new(qos_core::client::Client::new(
@@ -125,7 +163,8 @@ pub fn spawn_queue_consumer<Req, Resp>(
 
         loop {
             let queue_msg = queue_rx.recv().await.expect("failed to receive message");
-            let enclave_resp = send_proxy_request(queue_msg.request, Arc::clone(&client)).await;
+            let enclave_resp =
+                send_proxy_request::<Codec, _, _>(queue_msg.request, Arc::clone(&client)).await;
 
             queue_msg
                 .response_tx

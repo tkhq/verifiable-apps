@@ -76,7 +76,7 @@ pub struct ReshardBundle {
     pub signature: Vec<u8>,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Message)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug)]
 pub enum ReshardRequest {
     RetrieveBundle,
     HealthRequest,
