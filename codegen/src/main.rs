@@ -10,13 +10,13 @@ fn main() {
     let repo_root = crate_root.parent().unwrap();
 
     // Example of how to do codegen (we can remove this once we actually have code to generate)
-    // codegen(
-    //     &repo_root.join("common").join("health_check"),
-    //     &["proto/health.proto"],
-    //     &["proto"],
-    //     true,
-    //     false
-    // )
+    codegen(
+        &repo_root.join("apps").join("reshard").join("host"),
+        &["proto/reshard.proto"],
+        &["proto"],
+        true,
+        true
+    )
 }
 
 fn codegen(
