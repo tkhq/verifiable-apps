@@ -1,7 +1,7 @@
 //! Primitives for building Turnkey secure app gRPC host servers.
 
-use std::fmt::Debug;
 use std::sync::Arc;
+use std::{fmt::Debug, marker::PhantomData};
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use prost::Message;
@@ -34,6 +34,7 @@ pub trait Decode<T> {
 }
 
 /// Borsh implementation for a [`Encode`] and [`Decode`]
+#[derive(Clone, Debug)]
 pub struct BorshCodec;
 
 impl<T: BorshSerialize> Encode<T> for BorshCodec {
@@ -49,6 +50,7 @@ impl<T: BorshDeserialize> Decode<T> for BorshCodec {
 }
 
 /// Protocol buffer implementation for a [`Encode`] and [`Decode`]
+#[derive(Clone, Debug)]
 pub struct ProstCodec;
 
 impl<T: Message> Encode<T> for ProstCodec {
@@ -64,11 +66,37 @@ impl<T: Message + Default> Decode<T> for ProstCodec {
 }
 
 /// Message sent over socket connection.
+#[derive(Debug)]
 pub struct EnclaveQueueMsg<Req, Resp> {
     /// Channel to send response back.
     pub response_tx: tokio::sync::oneshot::Sender<Result<Resp, Status>>,
     /// The request message.
     pub request: Req,
+}
+
+/// Client for the enclave queue.
+#[derive(Debug)]
+pub struct EnclaveClient<Codec, Req, Resp> {
+    queue_tx: tokio::sync::mpsc::Sender<Box<EnclaveQueueMsg<Req, Resp>>>,
+    _phantom: PhantomData<Codec>,
+}
+
+impl<Codec, Req, Resp> EnclaveClient<Codec, Req, Resp>
+where
+    Codec: Encode<Req> + Decode<Resp>,
+{
+    /// Create a enclave client that sends messages over `queue_tx`.
+    pub fn new(queue_tx: tokio::sync::mpsc::Sender<Box<EnclaveQueueMsg<Req, Resp>>>) -> Self {
+        Self {
+            queue_tx,
+            _phantom: PhantomData::<Codec>,
+        }
+    }
+
+    /// Send a message to the enclave and wait for the response
+    pub async fn send(&self, req: Req) -> Result<Resp, tonic::Status> {
+        send_queue_msg::<Codec, _, _>(req, &self.queue_tx).await
+    }
 }
 
 /// Send a message to secure app via socket connection.

@@ -6,8 +6,8 @@ use crate::generated::{
     FILE_DESCRIPTOR_SET,
 };
 use health_check::{spawn_k8s_health_checker, AppHealthCheckable, AppHealthResponse};
-use host_primitives::GRPC_MAX_RECV_MSG_SIZE;
-use host_primitives::{send_queue_msg, spawn_queue_consumer, wait_for_sigterm, BorshCodec};
+use host_primitives::{spawn_queue_consumer, wait_for_sigterm, BorshCodec};
+use host_primitives::{EnclaveClient, GRPC_MAX_RECV_MSG_SIZE};
 use qos_core::io::SocketAddress;
 use reshard_app::service::{ReshardRequest, ReshardResponse};
 use tokio::sync::{mpsc, oneshot};
@@ -27,13 +27,16 @@ pub async fn listen(
 
     let (queue_tx, queue_rx) =
         mpsc::channel::<Box<EnclaveQueueMsg>>(host_primitives::ENCLAVE_QUEUE_CAPACITY);
+    let enclave = Arc::new(EnclaveClient::new(queue_tx));
 
     let app_checker = Health {
-        queue_tx: queue_tx.clone(),
+        enclave: enclave.clone(),
     };
     let health_service = spawn_k8s_health_checker(Arc::new(app_checker)).await;
 
-    let host: Host = Host::new(queue_tx);
+    let host: Host = Host {
+        enclave: enclave.clone(),
+    };
     spawn_queue_consumer::<BorshCodec, _, _>(enclave_addr, queue_rx);
 
     println!("HostServer listening on {listen_addr}");
@@ -58,13 +61,7 @@ pub async fn listen(
 #[derive(Debug)]
 pub struct Host {
     /// Sender for enclave queue. Enclave queue is for messages waiting to be sent to the enclave.
-    queue_tx: mpsc::Sender<Box<EnclaveQueueMsg>>,
-}
-
-impl Host {
-    fn new(queue_tx: mpsc::Sender<Box<EnclaveQueueMsg>>) -> Self {
-        Self { queue_tx }
-    }
+    enclave: Arc<EnclaveClient<BorshCodec, ReshardRequest, ReshardResponse>>,
 }
 
 #[tonic::async_trait]
@@ -73,9 +70,7 @@ impl ReshardService for Host {
         &self,
         _: tonic::Request<RetrieveReshardRequest>,
     ) -> std::result::Result<tonic::Response<RetrieveReshardResponse>, Status> {
-        let app_response =
-            send_queue_msg::<BorshCodec, _, _>(ReshardRequest::RetrieveBundle, &self.queue_tx)
-                .await?;
+        let app_response = self.enclave.send(ReshardRequest::RetrieveBundle).await?;
 
         let ReshardResponse::Bundle(bundle) = app_response else {
             return Err(Status::internal("received invalid response from app"));
@@ -89,15 +84,13 @@ impl ReshardService for Host {
 }
 
 struct Health {
-    queue_tx: mpsc::Sender<Box<EnclaveQueueMsg>>,
+    enclave: Arc<EnclaveClient<BorshCodec, ReshardRequest, ReshardResponse>>,
 }
 
 #[tonic::async_trait]
 impl AppHealthCheckable for Health {
     async fn app_health_check(&self) -> Result<tonic::Response<AppHealthResponse>, tonic::Status> {
-        let app_response =
-            send_queue_msg::<BorshCodec, _, _>(ReshardRequest::RetrieveBundle, &self.queue_tx)
-                .await?;
+        let app_response = self.enclave.send(ReshardRequest::RetrieveBundle).await?;
         if ReshardResponse::Health != app_response {
             return Err(Status::internal("received invalid response from app"));
         }
