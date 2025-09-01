@@ -6,6 +6,10 @@ publish = false
 
 
 [dependencies]
+borsh   = { workspace = true }
 qos_core   = { workspace = true }
 qos_hex    = { workspace = true }
+qos_p256    = { workspace = true }
+qos_crypto    = { workspace = true }
+qos_nsm    = { workspace = true }
 serde = { workspace = true, features = ["serde_derive", "std"]}
