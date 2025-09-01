@@ -44,14 +44,6 @@ impl ReshardOpts {
 			.clone()
 	}
 
-	/// Defaults to [`PIVOT_FILE`] if not explicitly specified
-	fn pivot_file(&self) -> String {
-		self.parsed
-			.single(PIVOT_FILE_OPT)
-			.expect("has a default value.")
-			.clone()
-	}
-
 	/// Defaults to [`EPHEMERAL_KEY_FILE`] if not explicitly specified
 	fn ephemeral_file(&self) -> String {
 		self.parsed
@@ -72,10 +64,10 @@ impl ReshardOpts {
 		self.parsed.flag(MOCK_NSM).unwrap_or(false)
 	}
 
-	// Return a parsed ShareSet, reading from stdin if the arg is "-"
+	// Return a parsed ShareSet
 	fn share_set(&self) -> ShareSet {
 		let arg = self.parsed.single(NEW_SHARE_SET).expect(
-			"--new-share-set is required (pass JSON inline or '-' for stdin)",
+			"--new-share-set is required",
 		);
 
         serde_json::from_str(&arg).expect("share set is not valid json")
@@ -96,11 +88,6 @@ impl GetParserForOptions for ReshardParser {
 				Token::new(QUORUM_FILE_OPT, "path to file where the Quorum Key secret should be stored. Use default for production.")
 					.takes_value(true)
 					.default_value(QUORUM_FILE)
-			)
-			.token(
-				Token::new(PIVOT_FILE_OPT, "path to file where the Pivot Binary should be stored. Use default for production.")
-					.takes_value(true)
-					.default_value(PIVOT_FILE),
 			)
 			.token(
 				Token::new(EPHEMERAL_FILE_OPT, "path to file where the Ephemeral Key secret should be stoored. Use default for production.")
@@ -167,7 +154,7 @@ impl Cli {
 					opts.ephemeral_file(),
 					opts.quorum_file(),
 					opts.manifest_file(),
-					opts.pivot_file(),
+					"not used".to_string(),
 				),
 				&opts.share_set(),
 				nsm.as_ref(),
