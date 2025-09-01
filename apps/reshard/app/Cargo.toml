@@ -1,0 +1,11 @@
+[package]
+name = "reshard_app"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+
+[dependencies]
+qos_core   = { workspace = true }
+qos_hex    = { workspace = true }
+serde = { workspace = true, features = ["serde_derive", "std"]}
