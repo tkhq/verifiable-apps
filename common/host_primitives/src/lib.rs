@@ -33,7 +33,7 @@ pub trait Decode<T> {
     fn decode(bytes: &[u8]) -> Result<T, String>;
 }
 
-/// Borsh implementation for a [`Encode`] and [`Decode`]
+/// Borsh implementation of [`Encode`] and [`Decode`]
 #[derive(Clone, Debug)]
 pub struct BorshCodec;
 
@@ -49,7 +49,7 @@ impl<T: BorshDeserialize> Decode<T> for BorshCodec {
     }
 }
 
-/// Protocol buffer implementation for a [`Encode`] and [`Decode`]
+/// Protocol buffer implementation of [`Encode`] and [`Decode`]
 #[derive(Clone, Debug)]
 pub struct ProstCodec;
 
@@ -65,7 +65,7 @@ impl<T: Message + Default> Decode<T> for ProstCodec {
     }
 }
 
-/// Message sent over socket connection.
+/// Type used in the enclave queue channel.
 #[derive(Debug)]
 pub struct EnclaveQueueMsg<Req, Resp> {
     /// Channel to send response back.

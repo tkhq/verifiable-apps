@@ -1,3 +1,5 @@
+//! gRPC reshard app host service.
+
 use qos_core::io::SocketAddress;
 
 pub mod generated {
@@ -12,16 +14,18 @@ pub mod generated {
 pub mod cli;
 mod host;
 
+/// Configuration for running the reshard gRPC host.
 pub struct ReshardHostConfig {
     listen_addr: std::net::SocketAddr,
     enclave_addr: SocketAddress,
 }
 
+/// Run the reshard gRPC host
 pub async fn run(
     ReshardHostConfig {
         listen_addr,
         enclave_addr,
     }: ReshardHostConfig,
-) {
-    let _ = host::listen(listen_addr, enclave_addr).await;
+) -> Result<(), tonic::transport::Error> {
+    host::listen(listen_addr, enclave_addr).await
 }
