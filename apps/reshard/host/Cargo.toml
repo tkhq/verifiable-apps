@@ -1,0 +1,10 @@
+[package]
+name = "reshard_host"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+tonic   = { workspace = true, features = ["codegen", "transport"]}
+prost = { workspace = true, features = ["derive", "std"] }
+tonic-prost = { workspace = true }
