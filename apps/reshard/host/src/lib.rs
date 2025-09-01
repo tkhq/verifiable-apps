@@ -1,3 +1,5 @@
+use qos_core::io::SocketAddress;
+
 pub mod generated {
     #![allow(missing_docs)]
 
@@ -7,5 +9,19 @@ pub mod generated {
 
     pub const FILE_DESCRIPTOR_SET: &[u8] = std::include_bytes!("generated/descriptor.bin");
 }
-
+pub mod cli;
 mod host;
+
+pub struct ReshardHostConfig {
+    listen_addr: std::net::SocketAddr,
+    enclave_addr: SocketAddress,
+}
+
+pub async fn run(
+    ReshardHostConfig {
+        listen_addr,
+        enclave_addr,
+    }: ReshardHostConfig,
+) {
+    let _ = host::listen(listen_addr, enclave_addr).await;
+}

@@ -11,7 +11,6 @@ use qos_nsm::NsmProvider;
 use qos_p256::P256Public;
 
 use borsh::{from_slice, BorshDeserialize, BorshSerialize};
-use prost::Message;
 
 /// Signed, attested, and audit-friendly output of a resharding run.
 ///

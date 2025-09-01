@@ -30,7 +30,7 @@ pub trait Encode<T> {
 /// A type that can be decoded from bytes.
 pub trait Decode<T> {
     /// Decode `bytes` to `T`
-    fn decode(bytes: &[u8]) -> Result<T, ()>;
+    fn decode(bytes: &[u8]) -> Result<T, String>;
 }
 
 /// Borsh implementation for a [`Encode`] and [`Decode`]
@@ -43,8 +43,8 @@ impl<T: BorshSerialize> Encode<T> for BorshCodec {
 }
 
 impl<T: BorshDeserialize> Decode<T> for BorshCodec {
-    fn decode(bytes: &[u8]) -> Result<T, ()> {
-        borsh::from_slice(bytes).map_err(|_| ())
+    fn decode(bytes: &[u8]) -> Result<T, String> {
+        borsh::from_slice(bytes).map_err(|e| format!("{e}"))
     }
 }
 
@@ -58,8 +58,8 @@ impl<T: Message> Encode<T> for ProstCodec {
 }
 
 impl<T: Message + Default> Decode<T> for ProstCodec {
-    fn decode(bytes: &[u8]) -> Result<T, ()> {
-        T::decode(bytes).map_err(|_| ())
+    fn decode(bytes: &[u8]) -> Result<T, String> {
+        T::decode(bytes).map_err(|e| format!("{e}"))
     }
 }
 
@@ -135,7 +135,7 @@ where
             }
         };
 
-        let response = Codec::decode(&*encoded_app_response)
+        let response = Codec::decode(&encoded_app_response)
             .map_err(|e| Status::internal(format!("Failed to decode app response: {e:?}")))?;
 
         Ok(response)
