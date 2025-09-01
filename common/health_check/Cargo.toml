@@ -1,0 +1,12 @@
+[package]
+name = "health_check"
+version = "0.1.0"
+edition.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+tonic = { workspace = true, features = ["codegen", "transport"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+tonic-health = { workspace = true }
