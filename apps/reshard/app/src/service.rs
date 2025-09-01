@@ -4,10 +4,13 @@ use qos_core::protocol::services::{
     genesis::GenesisMemberOutput,
 };
 use qos_core::protocol::QosHash;
+use qos_core::server::RequestProcessor;
 use qos_crypto::sha_512;
 use qos_nsm::types::{NsmRequest, NsmResponse};
 use qos_nsm::NsmProvider;
-use qos_p256::{P256Pair, P256Public};
+use qos_p256::P256Public;
+
+use borsh::{from_slice, BorshDeserialize, BorshSerialize};
 
 /// Signed, attested, and audit-friendly output of a resharding run.
 ///
@@ -18,7 +21,16 @@ use qos_p256::{P256Pair, P256Public};
 ///     together with an **ephemeral-key signature** over the outputs.
 ///
 /// Safe to check into git alongside genesis artifacts.
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(
+    BorshSerialize,
+    BorshDeserialize,
+    PartialEq,
+    Debug,
+    Clone,
+    Eq,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ReshardBundle {
     /// Identifies the **exact quorum key** that was resharded.
@@ -62,6 +74,25 @@ pub struct ReshardBundle {
     /// 3) verify this signature with the ephemeral pubkey.
     #[serde(with = "qos_hex::serde")]
     pub signature: Vec<u8>,
+}
+
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug)]
+pub enum ReshardRequest {
+    RetrieveBundle,
+    HealthRequest,
+}
+
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug)]
+pub enum ReshardResponse {
+    Bundle(ReshardBundle),
+    Error,
+    Health,
+}
+
+impl ReshardResponse {
+    fn error() -> Vec<u8> {
+        borsh::to_vec(&Self::Error).expect("serializing should work")
+    }
 }
 
 pub struct ReshardProcessor {
@@ -134,7 +165,6 @@ impl ReshardProcessor {
             .sign(&digest)
             .map_err(|e| format!("ephemeral sign failed: {e:?}"))?;
 
-
         // assemble all outputs together
         let reshard_bundle = ReshardBundle {
             quorum_public_key: quorum_pub,
@@ -147,5 +177,24 @@ impl ReshardProcessor {
         Ok(Self {
             cached_reshard_bundle: reshard_bundle,
         })
+    }
+}
+
+impl RequestProcessor for ReshardProcessor {
+    fn process(&mut self, request: Vec<u8>) -> Vec<u8> {
+        let req: ReshardRequest = match from_slice(&request) {
+            Ok(r) => r,
+            Err(_) => return ReshardResponse::error(),
+        };
+
+        let output = match req {
+            ReshardRequest::HealthRequest => ReshardResponse::Health,
+
+            ReshardRequest::RetrieveBundle => {
+                ReshardResponse::Bundle(self.cached_reshard_bundle.clone())
+            }
+        };
+
+        borsh::to_vec(&output).expect("should be valid borsh")
     }
 }
