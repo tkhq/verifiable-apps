@@ -749,11 +749,9 @@ checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
 name = "health_check"
 version = "0.1.0"
 dependencies = [
- "prost",
  "tokio",
- "tokio-stream",
  "tonic",
- "tonic-prost",
+ "tonic-health",
 ]
 
 [[package]]
@@ -1514,6 +1512,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "reshard_app"
+version = "0.1.0"
+dependencies = [
+ "borsh",
+ "qos_core",
+ "qos_crypto",
+ "qos_hex",
+ "qos_nsm",
+ "qos_p256",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "rfc6979"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1959,6 +1971,7 @@ dependencies = [
  "futures-core",
  "pin-project-lite",
  "tokio",
+ "tokio-util",
 ]
 
 [[package]]
@@ -2017,6 +2030,19 @@ dependencies = [
  "tower-layer",
  "tower-service",
  "tracing",
+]
+
+[[package]]
+name = "tonic-health"
+version = "0.14.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8aa31379f0851de4f223496a469ffcaae24ad4ce736493179c3e42135e2af5c"
+dependencies = [
+ "prost",
+ "tokio",
+ "tokio-stream",
+ "tonic",
+ "tonic-prost",
 ]
 
 [[package]]

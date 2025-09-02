@@ -7,6 +7,7 @@ rust.missing_docs = "warn"
 
 [workspace]
 members = [
+	"apps/reshard/app",
 	"common/host_primitives",
 	"common/health_check",
 	"e2e"
@@ -21,10 +22,15 @@ prost = { version = "0.14", default-features = false }
 borsh = { version = "1.5", default-features = false }
 tokio = { version = "1.47", default-features = false }
 tokio-stream = { version = "0.1" }
+tonic-health = { version = "0.14" }
+serde = { version = "1.0", default-features = false}
+serde_json = { version = "1", default-features = false }
 
 # QOS
 qos_core = { git = "https://github.com/tkhq/qos.git", rev = "38db2841cae036eefce0dcb6d0cca80f93a91e98", default-features = false }
 qos_crypto = { git = "https://github.com/tkhq/qos.git", rev = "38db2841cae036eefce0dcb6d0cca80f93a91e98", default-features = false }
+qos_hex = { git = "https://github.com/tkhq/qos.git", rev = "38db2841cae036eefce0dcb6d0cca80f93a91e98", default-features = false }
+qos_p256 = { git = "https://github.com/tkhq/qos.git", rev = "38db2841cae036eefce0dcb6d0cca80f93a91e98", default-features = false }
 qos_nsm = { git = "https://github.com/tkhq/qos.git", rev = "38db2841cae036eefce0dcb6d0cca80f93a91e98", default-features = false }
 
 # Local
