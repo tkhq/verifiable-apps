@@ -5,9 +5,15 @@ edition = "2021"
 publish = false
 
 [dependencies]
-tonic   = { workspace = true, features = ["codegen", "transport"]}
-tokio   = { workspace = true }
+tonic = { workspace = true, features = ["codegen", "transport", "router"]}
+tokio = { workspace = true }
 prost = { workspace = true, features = ["derive", "std"] }
 tonic-prost = { workspace = true }
+tonic-reflection = { workspace = true }
+serde_json = { workspace = true, features = ["std"] }
+
 host_primitives = { workspace = true }
+health_check = { workspace = true }
 reshard_app = { workspace = true }
+
+qos_core = { workspace = true }
