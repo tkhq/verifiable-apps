@@ -5,8 +5,8 @@ edition = "2021"
 publish = false
 
 [dependencies]
-tonic   = { workspace = true, features = ["codegen", "transport", "router"]}
-tokio   = { workspace = true }
+tonic = { workspace = true, features = ["codegen", "transport", "router"]}
+tokio = { workspace = true }
 prost = { workspace = true, features = ["derive", "std"] }
 tonic-prost = { workspace = true }
 tonic-reflection = { workspace = true }
