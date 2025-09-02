@@ -1,4 +1,4 @@
-name: Rust CI
+name: rust
 
 on:
   push:
@@ -8,25 +8,26 @@ on:
 
 jobs:
   test:
-    name: Test
+    name: test
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
     
     - name: Install Rust
-      uses: dtolnay/rust-toolchain@e2d9ac80ead8661a2e202b02724382f7a4eb1e1d # 1.88
+      # The rust version should align with rust-toolchain.toml
+      uses: dtolnay/rust-toolchain@e2d9ac80ead8661a2e202b02724382f7a4eb1e1d # 1.88.0
       with:
         components: rustfmt, clippy
 
-    - name: Check formatting
+    - name: fmt
       run: cargo fmt --all -- --check
     
-    - name: Run clippy
-      run: cargo clippy --all-targets --all-features -- -D warnings
+    - name: clippy
+      run: cargo clippy --all-targets -- -D warnings
     
-    - name: Build
+    - name: build
       run: cargo build --verbose
     
-    - name: Run tests
+    - name: test
       run: cargo test --verbose
