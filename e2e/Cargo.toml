@@ -1,0 +1,12 @@
+[package]
+name = "e2e"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+borsh = { workspace = true }
+tokio = { workspace = true }
+
+# QOS
+qos_nsm = { workspace = true }
+qos_core = { workspace = true }

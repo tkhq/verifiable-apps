@@ -7,9 +7,10 @@ rust.missing_docs = "warn"
 
 [workspace]
 members = [
+	"apps/reshard/app",
 	"common/host_primitives",
 	"common/health_check",
-	"apps/reshard/app"	
+	"e2e"
 ]
 
 resolver = "2"
