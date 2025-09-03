@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package services.reshard.v1;
+
+// ---------- Public gRPC surface exposed by the host ----------
+service ReshardService {
+  // Retrieve the result of the reshard operation
+  rpc RetrieveReshard(RetrieveReshardRequest) returns (RetrieveReshardResponse);
+}
+
+message RetrieveReshardRequest {} // no fields
+
+message RetrieveReshardResponse {
+  string reshard_bundle = 1;
+}
