@@ -8,6 +8,7 @@ use qos_core::{
     server::{RequestProcessor, SocketServer},
 };
 use qos_nsm::types::NsmResponse;
+use tokio::task::JoinHandle;
 
 /// Configuration for QOS simulator.
 pub struct QosSimulatorConfig {
@@ -24,17 +25,16 @@ pub async fn spawn_qos_simulator(
         enclave_sock,
         app_sock,
     }: QosSimulatorConfig,
-) {
-    tokio::task::spawn_blocking(async move || {
+) -> JoinHandle<()> {
+    tokio::task::spawn_blocking(move || {
         let enclave_sock_addr = SocketAddress::new_unix(&enclave_sock);
 
         let app_sock_addr = SocketAddress::new_unix(&app_sock);
         let processor = Processor {
             app_client: Client::new(app_sock_addr, TimeVal::seconds(1)),
         };
-
         SocketServer::listen(enclave_sock_addr, processor).unwrap();
-    });
+    })
 }
 
 struct Processor {
