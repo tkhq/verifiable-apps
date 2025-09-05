@@ -69,7 +69,7 @@ where
             enclave_sock: enc_sock.to_str().unwrap().to_string(),
             app_sock: app_sock.to_str().unwrap().to_string(),
         }
-    ).await;
+    );
 
     // 2) reshard_app
     let quorum_secret = "./fixtures/reshard/quorum.secret";
@@ -262,5 +262,4 @@ async fn reshard_e2e_json() {
     }
     execute(test).await;
     dbg!();
-    return;
 }
