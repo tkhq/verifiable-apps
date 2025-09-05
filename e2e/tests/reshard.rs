@@ -1,9 +1,4 @@
 //! One-file integration test for the reshard stack (simulator_enclave + reshard_app + reshard_host).
-
-#![forbid(unsafe_code)]
-#![deny(clippy::all)]
-#![warn(missing_docs)]
-
 use e2e::qos_simulator;
 use futures::FutureExt;
 use reshard_app::service::ReshardBundle;
