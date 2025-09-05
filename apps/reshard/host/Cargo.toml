@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
+[features]
+vsock = ["qos_core/vm"]
+
 [dependencies]
 tonic = { workspace = true, features = ["codegen", "transport", "router"]}
 tokio = { workspace = true }
@@ -11,6 +14,7 @@ prost = { workspace = true, features = ["derive", "std"] }
 tonic-prost = { workspace = true }
 tonic-reflection = { workspace = true }
 serde_json = { workspace = true, features = ["std"] }
+clap = { workspace = true }
 
 host_primitives = { workspace = true }
 health_check = { workspace = true }

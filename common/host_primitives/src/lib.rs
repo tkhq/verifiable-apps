@@ -194,10 +194,9 @@ pub fn spawn_queue_consumer<Codec, Req, Resp>(
             let enclave_resp =
                 send_proxy_request::<Codec, _, _>(queue_msg.request, Arc::clone(&client)).await;
 
-            queue_msg
-                .response_tx
-                .send(enclave_resp)
-                .expect("message processor failed");
+            if let Err(e) = queue_msg.response_tx.send(enclave_resp) {
+                eprint!("queue consumer failed to send to caller: {e:?}")
+            };
         }
     });
 }

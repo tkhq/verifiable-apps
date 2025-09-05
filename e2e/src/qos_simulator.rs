@@ -8,6 +8,7 @@ use qos_core::{
     server::{RequestProcessor, SocketServer},
 };
 use qos_nsm::types::NsmResponse;
+use std::thread::{self, JoinHandle};
 
 /// Configuration for QOS simulator.
 pub struct QosSimulatorConfig {
@@ -19,22 +20,21 @@ pub struct QosSimulatorConfig {
 }
 
 /// Spawn a QOS simulator. This will simulate QOS proxying requests from the host to application binary.
-pub async fn spawn_qos_simulator(
+pub fn spawn_qos_simulator(
     QosSimulatorConfig {
         enclave_sock,
         app_sock,
     }: QosSimulatorConfig,
-) {
-    tokio::task::spawn_blocking(async move || {
+) -> JoinHandle<()> {
+    thread::spawn(move || {
         let enclave_sock_addr = SocketAddress::new_unix(&enclave_sock);
 
         let app_sock_addr = SocketAddress::new_unix(&app_sock);
         let processor = Processor {
             app_client: Client::new(app_sock_addr, TimeVal::seconds(1)),
         };
-
         SocketServer::listen(enclave_sock_addr, processor).unwrap();
-    });
+    })
 }
 
 struct Processor {

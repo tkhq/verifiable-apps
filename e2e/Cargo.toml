@@ -6,7 +6,18 @@ edition.workspace = true
 [dependencies]
 borsh = { workspace = true }
 tokio = { workspace = true }
+tempdir = { workspace = true }
+futures = { workspace = true, features = ["std"]}
+tonic = { workspace = true }
+serde_json = { workspace = true }
+clap = { workspace = true }
+
+reshard_app = { workspace = true }
+reshard_host = { workspace = true }
 
 # QOS
 qos_nsm = { workspace = true }
-qos_core = { workspace = true }
+qos_core = { workspace = true, features = ["mock"] }
+qos_p256 = { workspace = true }
+qos_crypto = { workspace = true }
+qos_test_primitives = { workspace = true }

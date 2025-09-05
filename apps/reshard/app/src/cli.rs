@@ -148,7 +148,7 @@ impl Cli {
                     opts.ephemeral_file(),
                     opts.quorum_file(),
                     opts.manifest_file(),
-                    "not used".to_string(),
+                    "pivot not used".to_string(),
                 ),
                 &opts.share_set(),
                 nsm.as_ref(),
