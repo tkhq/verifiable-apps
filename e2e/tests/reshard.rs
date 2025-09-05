@@ -4,10 +4,10 @@
 #![deny(clippy::all)]
 #![warn(missing_docs)]
 
-use reshard_app::service::ReshardBundle;
 use e2e::qos_simulator;
-use std::{fs, path::PathBuf, process::Command};
 use futures::FutureExt;
+use reshard_app::service::ReshardBundle;
+use std::{fs, path::PathBuf, process::Command};
 
 use borsh::to_vec as borsh_to_vec;
 
@@ -17,8 +17,8 @@ use reshard_host::generated::reshard::RetrieveReshardRequest;
 use qos_core::protocol::services::boot::{Manifest, ManifestEnvelope};
 use qos_p256::{P256Pair, P256Public};
 use serde_json;
-use tonic::transport::Channel;
 use tempdir::TempDir;
+use tonic::transport::Channel;
 
 /// Local host IP address.
 pub const LOCAL_HOST: &str = "127.0.0.1";
@@ -57,19 +57,15 @@ where
     let app_sock = tmp_dir.path().join(".reshard.app.sock");
     let enc_sock = tmp_dir.path().join(".reshard.enclave.sock");
 
-
-
     // Minimal manifest envelope
     let manifest_path = tmp_dir.path().join(".manifest_envelope");
     write_minimal_manifest(&manifest_path);
 
     // 1) simulator_enclave
-    let join_handle = qos_simulator::spawn_qos_simulator(
-        qos_simulator::QosSimulatorConfig{
-            enclave_sock: enc_sock.to_str().unwrap().to_string(),
-            app_sock: app_sock.to_str().unwrap().to_string(),
-        }
-    );
+    let join_handle = qos_simulator::spawn_qos_simulator(qos_simulator::QosSimulatorConfig {
+        enclave_sock: enc_sock.to_str().unwrap().to_string(),
+        app_sock: app_sock.to_str().unwrap().to_string(),
+    });
 
     // 2) reshard_app
     let quorum_secret = "./fixtures/reshard/quorum.secret";
@@ -114,12 +110,14 @@ where
         .unwrap()
         .max_decoding_message_size(GRPC_MAX_RECV_MSG_SIZE);
 
-    let test_args = TestArgs{
+    let test_args = TestArgs {
         reshard_client: reshard,
     };
 
     // Run the user test and ensure cleanup.
-    let res = std::panic::AssertUnwindSafe(test(test_args)).catch_unwind().await;
+    let res = std::panic::AssertUnwindSafe(test(test_args))
+        .catch_unwind()
+        .await;
     assert!(res.is_ok(), "test body panicked");
 }
 
