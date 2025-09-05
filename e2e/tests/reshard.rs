@@ -16,7 +16,6 @@ use reshard_host::generated::reshard::RetrieveReshardRequest;
 
 use qos_core::protocol::services::boot::{Manifest, ManifestEnvelope};
 use qos_p256::{P256Pair, P256Public};
-use serde_json;
 use tempdir::TempDir;
 use tonic::transport::Channel;
 
@@ -62,7 +61,7 @@ where
     write_minimal_manifest(&manifest_path);
 
     // 1) simulator_enclave
-    let join_handle = qos_simulator::spawn_qos_simulator(qos_simulator::QosSimulatorConfig {
+    let _join_handle = qos_simulator::spawn_qos_simulator(qos_simulator::QosSimulatorConfig {
         enclave_sock: enc_sock.to_str().unwrap().to_string(),
         app_sock: app_sock.to_str().unwrap().to_string(),
     });
