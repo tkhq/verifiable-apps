@@ -11,7 +11,7 @@ define run
 		--workdir /home/user \
 		--volume .:/home/user \
 		$(2) \
-		tkhq-mono/dev \
+		tkhq/verifiable-apps/dev \
 		/bin/bash -c "set -eu; $(1)"
 endef
 
@@ -31,7 +31,7 @@ endef
 define build
 	$(eval NAME := $(1))
 	$(eval TYPE := $(if $(2),$(2),dir))
-	$(eval REGISTRY := tkhq-mono)
+	$(eval REGISTRY := tkhq/verifiable-apps)
 	$(eval PLATFORM := $(if $(3),$(3),linux/amd64))
 	DOCKER_BUILDKIT=1 \
 	SOURCE_DATE_EPOCH=1 \
