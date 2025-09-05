@@ -19,7 +19,7 @@ shell: out/.common-loaded
 		--volume .:/home/qos \
 		--workdir /home/qos \
 		--user $(shell id -u):$(shell id -g) \
-		qos-local/common:latest \
+		tkhq/verifiable-apps/common:latest \
 		/bin/bash
 
 out/reshard_host/index.json: \
