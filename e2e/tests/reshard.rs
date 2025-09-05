@@ -5,7 +5,6 @@ use std::path::PathBuf;
 use reshard_host::generated::reshard::reshard_service_client::ReshardServiceClient;
 use reshard_host::generated::reshard::RetrieveReshardRequest;
 
-use borsh;
 use e2e::TestArgs;
 use qos_p256::{P256Pair, P256Public};
 
