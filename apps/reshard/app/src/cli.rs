@@ -21,7 +21,6 @@ const MOCK_NSM: &str = "mock-nsm";
 const THRESHOLD: &str = "threshold";
 const MEMBERS: &str = "members"; // semicolon-separated hex pubkeys
 
-
 impl ReshardOpts {
     fn new(args: &mut Vec<String>) -> Self {
         let parsed = OptionsParser::<ReshardParser>::parse(args)
@@ -64,13 +63,15 @@ impl ReshardOpts {
 
     // Return a parsed ShareSet
     fn share_set(&self) -> ShareSet {
-        let threshold: usize = self.parsed
+        let threshold: usize = self
+            .parsed
             .single(THRESHOLD)
             .expect("--threshold is required")
             .parse()
             .expect("--threshold must be an integer");
 
-        let members = self.parsed
+        let members = self
+            .parsed
             .single(MEMBERS)
             .expect("--members is required (semicolon-separated hex pubkeys)");
 
@@ -87,12 +88,15 @@ impl ReshardOpts {
             .into_iter()
             .enumerate()
             .map(|(i, pub_key_bytes)| QuorumMember {
-                alias: format!("reshard-{}", i+1),
-                pub_key: pub_key_bytes
+                alias: format!("reshard-{}", i + 1),
+                pub_key: pub_key_bytes,
             })
             .collect();
 
-        ShareSet { threshold: threshold as u32, members }
+        ShareSet {
+            threshold: threshold as u32,
+            members,
+        }
     }
 }
 

@@ -1,7 +1,11 @@
 //! Utils for e2e tests. See `/tests` for e2e tests.
 //! One-file integration test for the reshard stack (simulator_enclave + reshard_app + reshard_host).
 use futures::FutureExt;
-use std::{fs, path::{Path, PathBuf}, process::Command};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 use borsh::to_vec as borsh_to_vec;
 
@@ -147,7 +151,8 @@ fn joined_pubkeys(dir: &Path) -> String {
     files.sort();
 
     // read, strip whitespace, join with ';'
-    let keys: Vec<String> = files.into_iter()
+    let keys: Vec<String> = files
+        .into_iter()
         .map(|p| fs::read_to_string(&p).expect("read .pub"))
         .map(|s| s.split_whitespace().collect::<String>())
         .filter(|s| !s.is_empty())
