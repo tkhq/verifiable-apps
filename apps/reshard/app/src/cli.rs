@@ -5,10 +5,11 @@ use qos_core::{
     handles::Handles,
     io::SocketAddress,
     parser::{GetParserForOptions, OptionsParser, Parser, Token},
-    protocol::services::boot::ShareSet,
+    protocol::services::boot::{QuorumMember, ShareSet},
     server::SocketServer,
     EPHEMERAL_KEY_FILE, MANIFEST_FILE, QUORUM_FILE, SEC_APP_SOCK,
 };
+use qos_hex::FromHex;
 
 /// CLI options for starting up the app server.
 #[derive(Default, Clone, Debug, PartialEq)]
@@ -17,7 +18,9 @@ struct ReshardOpts {
 }
 
 const MOCK_NSM: &str = "mock-nsm";
-const NEW_SHARE_SET: &str = "new-share-set";
+const THRESHOLD: &str = "threshold";
+const MEMBERS: &str = "members"; // semicolon-separated hex pubkeys
+
 
 impl ReshardOpts {
     fn new(args: &mut Vec<String>) -> Self {
@@ -61,12 +64,35 @@ impl ReshardOpts {
 
     // Return a parsed ShareSet
     fn share_set(&self) -> ShareSet {
-        let arg = self
-            .parsed
-            .single(NEW_SHARE_SET)
-            .expect("--new-share-set is required");
+        let threshold: usize = self.parsed
+            .single(THRESHOLD)
+            .expect("--threshold is required")
+            .parse()
+            .expect("--threshold must be an integer");
 
-        serde_json::from_str(arg).expect("share set is not valid json")
+        let members = self.parsed
+            .single(MEMBERS)
+            .expect("--members is required (semicolon-separated hex pubkeys)");
+
+        let pub_keys: Vec<Vec<u8>> = members
+            .split(";")
+            .map(|s| Vec::from_hex(s).expect("invalide hex in --members"))
+            .collect();
+
+        if threshold < 2 || threshold > pub_keys.len() {
+            panic!("--threshold must be in 2..=len(--members)")
+        }
+
+        let members: Vec<QuorumMember> = pub_keys
+            .into_iter()
+            .enumerate()
+            .map(|(i, pub_key_bytes)| QuorumMember {
+                alias: format!("reshard-{}", i+1),
+                pub_key: pub_key_bytes
+            })
+            .collect();
+
+        ShareSet { threshold: threshold as u32, members }
     }
 }
 
@@ -96,13 +122,12 @@ impl GetParserForOptions for ReshardParser {
 					.default_value(MANIFEST_FILE)
 			)
             .token(
-                Token::new(
-                    NEW_SHARE_SET,
-                    r#"JSON ShareSet. Pass JSON inline, or "-" to read from stdin.
-							Example:
-							{"threshold":3,"members":[{"alias":"reshard-1","pubKey":"04..."}]}"#,
-                )
-                .takes_value(true),
+                Token::new(THRESHOLD, "quorum threshold")
+                .takes_value(true)
+            )
+            .token(
+                Token::new(MEMBERS, "semicolon-separated hex pubkeys (e.g. 04ab..;04cd..)")
+                    .takes_value(true)
             )
             .token(Token::new(
                 MOCK_NSM,

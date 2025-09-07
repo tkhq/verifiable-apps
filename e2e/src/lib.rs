@@ -1,7 +1,7 @@
 //! Utils for e2e tests. See `/tests` for e2e tests.
 //! One-file integration test for the reshard stack (simulator_enclave + reshard_app + reshard_host).
 use futures::FutureExt;
-use std::{fs, path::PathBuf, process::Command};
+use std::{fs, path::{Path, PathBuf}, process::Command};
 
 use borsh::to_vec as borsh_to_vec;
 
@@ -61,11 +61,11 @@ where
     });
 
     // 2) reshard_app
+    let new_share_dir = Path::new("./fixtures/reshard/new-share-set");
+    let threshold = load_threshold(&new_share_dir.join("quorum_threshold"));
+    let members = joined_pubkeys(new_share_dir);
     let quorum_secret = "./fixtures/reshard/quorum.secret";
     let ephemeral_secret = "./fixtures/reshard/ephemeral.secret";
-    let new_share_set_json =
-        std::fs::read_to_string("./fixtures/reshard/new-share-set/new-share-set.json")
-            .expect("read new-share-set.json");
     let _app: ChildWrapper = Command::new("../target/debug/reshard_app")
         .arg("--usock")
         .arg(&app_sock)
@@ -75,8 +75,10 @@ where
         .arg(ephemeral_secret)
         .arg("--manifest-file")
         .arg(&manifest_path)
-        .arg("--new-share-set")
-        .arg(&new_share_set_json)
+        .arg("--threshold")
+        .arg(&threshold)
+        .arg("--members")
+        .arg(&members)
         .arg("--mock-nsm")
         .spawn()
         .expect("spawn reshard_app")
@@ -123,4 +125,37 @@ fn write_minimal_manifest(path: &PathBuf) {
     };
     let bytes = borsh_to_vec(&env).expect("borsh ManifestEnvelope");
     fs::write(path, bytes).expect("write manifest");
+}
+
+fn load_threshold(th_path: &Path) -> String {
+    fs::read_to_string(th_path)
+        .expect("read quorum_threshold")
+        .trim()
+        .to_string()
+}
+
+fn joined_pubkeys(dir: &Path) -> String {
+    // collect *.pub files
+    let mut files: Vec<PathBuf> = fs::read_dir(dir)
+        .expect("failed to read dir")
+        .filter_map(|e| e.ok())
+        .map(|e| e.path())
+        .filter(|p| p.is_file() && p.extension().and_then(|s| s.to_str()) == Some("pub"))
+        .collect();
+
+    // deterministic order
+    files.sort();
+
+    // read, strip whitespace, join with ';'
+    let keys: Vec<String> = files.into_iter()
+        .map(|p| fs::read_to_string(&p).expect("read .pub"))
+        .map(|s| s.split_whitespace().collect::<String>())
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    if keys.is_empty() {
+        panic!("no *.pub files found in {}", dir.display());
+    }
+
+    keys.join(";")
 }
