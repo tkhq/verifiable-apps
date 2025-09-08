@@ -1,0 +1,10 @@
+[package]
+name = "reshard_provision"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+clap = { workspace = true }
+
+qos_client = { workspace = true }
