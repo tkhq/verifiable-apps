@@ -31,3 +31,4 @@ EOF
 
 FROM scratch AS package
 COPY --from=base /rootfs/. .
+ENTRYPOINT ["/reshard_provision"]
