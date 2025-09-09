@@ -1,6 +1,9 @@
 FROM common AS build
 ADD . .
 
+# pre-fetch all workspace deps; we need to them to build with `--network=none`
+RUN cargo fetch
+
 RUN pkg-config --modversion libpcsclite
 
 # Directory for Rust artifacts
