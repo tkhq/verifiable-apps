@@ -1,5 +1,5 @@
 FROM common AS base
-ADD . .
+ADD /src .
 
 FROM base AS build
 ENV PCSC_LIB_NAME=static=pcsclite
