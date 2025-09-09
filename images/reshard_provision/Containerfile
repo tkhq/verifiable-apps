@@ -17,7 +17,7 @@ RUN cargo fetch
 WORKDIR /apps/reshard/provision
 RUN --network=none <<-EOF
     set -eu
-    cargo build ${CARGOFLAGS} --features smartcard
+    cargo build ${CARGOFLAGS}
     mkdir -p /rootfs
     mv ${RELEASE_DIR}/reshard_provision /rootfs/
 EOF
