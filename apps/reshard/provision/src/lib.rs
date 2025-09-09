@@ -26,7 +26,6 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
 
         // Provision configured number of yubikeys for this seed
         for k in 1..=cfg.keys_per_member {
-
             let prompt = format!("please insert yubikey {k} for member {m}. are you ready?");
             while !confirm_yes(&prompt, false)? {
                 println!("oops that wasn't correct. have you recently 420'd?");
