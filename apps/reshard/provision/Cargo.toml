@@ -7,5 +7,6 @@ publish = false
 [dependencies]
 clap = { workspace = true }
 dialoguer = { workspace = true }
+tempdir = { workspace = true }
 
 qos_client = { workspace = true, features = ["smartcard"]}

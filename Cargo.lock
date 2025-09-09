@@ -2367,6 +2367,7 @@ dependencies = [
  "clap",
  "dialoguer",
  "qos_client",
+ "tempdir",
 ]
 
 [[package]]
