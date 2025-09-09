@@ -1,20 +1,20 @@
-FROM common AS base
-ADD /src .
+FROM common AS build
+ADD . .
 
-FROM base AS build
+# Rust configuration
+ENV RUSTFLAGS='-C target-feature=+crt-static'
+ENV CARGOFLAGS='--target x86_64-unknown-linux-musl --no-default-features --locked --release'
+RUN pkg-config --modversion libpcsclite
+
+# Directory for Rust artifacts
+ENV RELEASE_DIR=/target/x86_64-unknown-linux-musl/release
+
 ENV PCSC_LIB_NAME=static=pcsclite
-RUN <<-EOF
-	set -eux
-	env -C apps/reshard/provision cargo build ${CARGOFLAGS}
-	cp /target/${TARGET}/release/reshard_provision /
-	file /reshard_provision | grep "static-pie"
-EOF
+RUN --network=none cargo build ${CARGOFLAGS} --package reshard_provision
 
-FROM base AS install
-WORKDIR /rootfs
-COPY --from=build /reshard_provision .
-RUN find . -exec touch -hcd "@0" "{}" +
+RUN mkdir -p /rootfs/
+RUN cp target/x86_64-unknown-linux-musl/release/reshard_provision /rootfs/
+RUN file /rootfs/reshard_provision| grep "static-pie"
 
 FROM scratch AS package
-COPY --from=install /rootfs .
-ENTRYPOINT ["/reshard_provision"]
+COPY --from=build /rootfs/. .
