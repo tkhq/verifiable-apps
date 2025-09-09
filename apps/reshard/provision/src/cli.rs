@@ -3,6 +3,8 @@
 use clap::Parser;
 use std::path::PathBuf;
 
+use crate::{run, Config};
+
 #[derive(Parser, Debug)]
 #[command(name="reshard_provision", version, about="Offline Yubikey provisioning ceremony orchestrator")]
 struct Args {
@@ -35,5 +37,16 @@ impl CLI {
     /// Execute the command line interface.
     pub fn execute() {
         let args = Args::parse();
+        let cfg = Config {
+            members: args.members,
+            keys_per_member: args.keys_per_member,
+            out: args.out,
+            include_secrets: args.include_secrets,
+            interactive: args.interactive,
+        };
+        if let Err(e) = run(cfg) {
+            eprintln!("error: {e}");
+            std::process::exit(1);
+        }
     }
 }
