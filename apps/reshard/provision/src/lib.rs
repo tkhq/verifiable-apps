@@ -23,26 +23,23 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
 
         // Generate seed + pub for this member
         generate_file_key(&secret_path, &pub_path);
-        println!(
-            "member {m:02}: wrote {}, {}",
-            pub_path.display(),
-            secret_path.display()
-        );
 
         // Provision configured number of yubikeys for this seed
         for k in 1..=cfg.keys_per_member {
-            while !confirm_inserted_for(m, k)? {
-                println!("insert YubiKey #{k} for member {m:02} and press Enter…");
+
+            let prompt = format!("please insert yubikey {k} for member {m}. are you ready?");
+            while !confirm_yes(&prompt, false)? {
+                println!("oops that wasn't correct. have you recently 420'd?");
             }
 
             loop {
                 match advanced_provision_yubikey(&secret_path, None) {
                     Ok(()) => {
-                        println!("provisioned yubikey {k}, member {m:02}");
+                        println!("provisioned yubikey {k}, member {m}");
                         break;
                     }
                     Err(e) => {
-                        eprintln!("provisioning failed for yubikey {k}, member {m:02}, {e:?}");
+                        eprintln!("provisioning failed for yubikey {k}, member {m}, {e:?}");
                         continue;
                     }
                 }
@@ -51,9 +48,9 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
 
         if !cfg.include_secrets {
             let _ = fs::remove_file(&secret_path);
-            println!("member {m:02}: removed {}", secret_path.display());
+            println!("removed {}", secret_path.display());
         } else {
-            println!("member {m:02}: kept {}", secret_path.display());
+            println!("kept {}", secret_path.display());
         }
     }
 
@@ -61,14 +58,12 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn confirm_inserted_for(member: usize, k: usize) -> Result<bool, Box<dyn std::error::Error>> {
+fn confirm_yes(prompt: &str, default_yes: bool) -> Result<bool, Box<dyn std::error::Error>> {
     Ok(Confirm::with_theme(&ColorfulTheme::default())
-        .with_prompt(format!(
-            "member {member:02} / key #{k}: Is a YubiKey inserted?"
-        ))
-        .default(true)
+        .with_prompt(prompt.to_string())
+        .default(default_yes)
         .show_default(true)
         .wait_for_newline(true)
-        .report(true)
+        .report(false)
         .interact()?)
 }
