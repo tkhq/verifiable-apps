@@ -81,7 +81,7 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
 
 fn confirm_yes(prompt: &str, default_yes: bool) -> Result<bool, Box<dyn std::error::Error>> {
     Ok(Confirm::with_theme(&ColorfulTheme::default())
-        .with_prompt(format!("{prompt} [yes/no]"))
+        .with_prompt(format!("{prompt}"))
         .default(default_yes)
         .show_default(true)
         .wait_for_newline(true)
