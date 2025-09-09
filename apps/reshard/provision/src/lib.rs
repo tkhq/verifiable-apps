@@ -15,13 +15,31 @@ pub struct Config {
 }
 
 pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
+    println!("YubiKey provisioning is about to start. This is serious.");
+    if confirm_yes("Are you inebriated?", true)? {
+        eprintln!("Aborting provisioning — please try again when sober.");
+        return Err("operator indicated inebriation".into());
+    }
+
     // Ensure output directory exists
     fs::create_dir_all(&cfg.out)?;
 
     for m in 1..=cfg.num_operators {
+        let pub_path: PathBuf = cfg.out.join(format!("{m}.pub"));
+        if pub_path.exists() {
+            let skip_prompt = format!("Found existing public key for operator {m}. Skip provisioning?");
+            let skip = confirm_yes(
+                &skip_prompt,
+                true)?;
+
+            if skip {
+                println!("Skipping operator {m}");
+                continue;
+            }
+        }
+
         let tmp_dir = TempDir::new("secrets").unwrap();
         let tmp_secret_path = tmp_dir.path().join(format!("{m}.secret"));
-        let pub_path: PathBuf = cfg.out.join(format!("{m}.pub"));
 
         generate_file_key(&tmp_secret_path, &pub_path);
 
@@ -29,7 +47,7 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
         for k in 1..=cfg.keys_per_operator {
             let prompt = format!("Please insert yubikey {k} for operator {m}. Are you ready?");
             while !confirm_yes(&prompt, false)? {
-                println!("Oops that wasn't correct. have you recently 420'd?");
+                println!("Oops that wasn't correct. Have you recently 420'd?");
             }
 
             loop {
@@ -63,7 +81,7 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
 
 fn confirm_yes(prompt: &str, default_yes: bool) -> Result<bool, Box<dyn std::error::Error>> {
     Ok(Confirm::with_theme(&ColorfulTheme::default())
-        .with_prompt(prompt.to_string())
+        .with_prompt(format!("{prompt} [yes/no]"))
         .default(default_yes)
         .show_default(true)
         .wait_for_newline(true)
