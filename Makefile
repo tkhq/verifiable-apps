@@ -5,7 +5,8 @@ REGISTRY := local
 .PHONY: default
 default: \
 	out/reshard_host/index.json \
-	out/reshard_app/index.json
+	out/reshard_app/index.json \
+	out/reshard_provision/index.json 
 
 out/common/index.json: \
 	images/common/Containerfile
