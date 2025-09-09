@@ -27,10 +27,9 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
     for m in 1..=cfg.num_operators {
         let pub_path: PathBuf = cfg.out.join(format!("{m}.pub"));
         if pub_path.exists() {
-            let skip_prompt = format!("Found existing public key for operator {m}. Skip provisioning?");
-            let skip = confirm_yes(
-                &skip_prompt,
-                true)?;
+            let skip_prompt =
+                format!("Found existing public key for operator {m}. Skip provisioning?");
+            let skip = confirm_yes(&skip_prompt, true)?;
 
             if skip {
                 println!("Skipping operator {m}");
