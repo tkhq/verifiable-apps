@@ -27,10 +27,6 @@ struct Args {
     /// Include master *.secret files in output
     #[arg(long)]
     include_secrets: bool,
-
-    /// Prompt before each key
-    #[arg(long)]
-    interactive: bool,
 }
 
 impl Args {}
@@ -46,7 +42,6 @@ impl CLI {
             keys_per_member: args.keys_per_member,
             out: args.out,
             include_secrets: args.include_secrets,
-            interactive: args.interactive,
         };
         if let Err(e) = run(cfg) {
             eprintln!("error: {e}");

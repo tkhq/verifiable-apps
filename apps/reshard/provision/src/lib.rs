@@ -11,7 +11,6 @@ pub struct Config {
     pub keys_per_member: usize,
     pub out: PathBuf,
     pub include_secrets: bool,
-    pub interactive: bool,
 }
 
 pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
