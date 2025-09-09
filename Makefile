@@ -40,6 +40,15 @@ out/reshard_app/index.json: \
 		apps/reshard/app)
 	$(call build,reshard_app)
 
+out/reshard_provision/index.json: \
+	out/common/index.json \
+	images/reshard_provision/Containerfile \
+	$(shell git ls-files \
+		Cargo.toml \
+		Cargo.lock \
+		apps/reshard/app)
+	$(call build,reshard_provision)
+
 .PHONY: codegen
 codegen: 
 	cargo run --manifest-path codegen/Cargo.toml
