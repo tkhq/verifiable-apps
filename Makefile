@@ -46,7 +46,7 @@ out/reshard_provision/index.json: \
 	$(shell git ls-files \
 		Cargo.toml \
 		Cargo.lock \
-		apps/reshard/app)
+		apps/reshard/provision)
 	$(call build,reshard_provision)
 
 .PHONY: codegen
