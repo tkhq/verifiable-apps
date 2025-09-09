@@ -1,8 +1,8 @@
 pub mod cli;
 
+use dialoguer::{theme::ColorfulTheme, Confirm};
+use qos_client::cli::{advanced_provision_yubikey, generate_file_key};
 use std::{fs, path::PathBuf};
-use qos_client::cli::{generate_file_key, advanced_provision_yubikey};
-use dialoguer::{Confirm, theme::ColorfulTheme};
 
 /// Public configuration passed in from the CLI (or tests).
 #[derive(Debug, Clone)]
@@ -14,7 +14,7 @@ pub struct Config {
     pub interactive: bool,
 }
 
-pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>>{
+pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
     // Ensure output directory exists
     fs::create_dir_all(&cfg.out)?;
 
@@ -24,7 +24,11 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>>{
 
         // Generate seed + pub for this member
         generate_file_key(&secret_path, &pub_path);
-        println!("member {m:02}: wrote {}, {}", pub_path.display(), secret_path.display());
+        println!(
+            "member {m:02}: wrote {}, {}",
+            pub_path.display(),
+            secret_path.display()
+        );
 
         // Provision configured number of yubikeys for this seed
         for k in 1..=cfg.keys_per_member {
@@ -53,15 +57,16 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>>{
             println!("member {m:02}: kept {}", secret_path.display());
         }
     }
-    
+
     println!("all members provisioned");
     Ok(())
 }
 
-
 fn confirm_inserted_for(member: usize, k: usize) -> Result<bool, Box<dyn std::error::Error>> {
     Ok(Confirm::with_theme(&ColorfulTheme::default())
-        .with_prompt(format!("member {member:02} / key #{k}: Is a YubiKey inserted?"))
+        .with_prompt(format!(
+            "member {member:02} / key #{k}: Is a YubiKey inserted?"
+        ))
         .default(true)
         .show_default(true)
         .wait_for_newline(true)
