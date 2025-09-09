@@ -8,8 +8,8 @@ use tempdir::TempDir;
 /// Public configuration passed in from the CLI (or tests).
 #[derive(Debug, Clone)]
 pub struct Config {
-    pub members: usize,
-    pub keys_per_member: usize,
+    pub num_operators: usize,
+    pub keys_per_operator: usize,
     pub out: PathBuf,
     pub include_secrets: bool,
 }
@@ -18,29 +18,28 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
     // Ensure output directory exists
     fs::create_dir_all(&cfg.out)?;
 
-    for m in 1..=cfg.members {
+    for m in 1..=cfg.num_operators {
         let tmp_dir = TempDir::new("secrets").unwrap();
         let tmp_secret_path = tmp_dir.path().join(format!("{m}.secret"));
         let pub_path: PathBuf = cfg.out.join(format!("{m}.pub"));
 
-        // Generate seed + pub for this member
         generate_file_key(&tmp_secret_path, &pub_path);
 
         // Provision configured number of yubikeys for this seed
-        for k in 1..=cfg.keys_per_member {
-            let prompt = format!("please insert yubikey {k} for member {m}. are you ready?");
+        for k in 1..=cfg.keys_per_operator {
+            let prompt = format!("Please insert yubikey {k} for operator {m}. Are you ready?");
             while !confirm_yes(&prompt, false)? {
-                println!("oops that wasn't correct. have you recently 420'd?");
+                println!("Oops that wasn't correct. have you recently 420'd?");
             }
 
             loop {
                 match advanced_provision_yubikey(&tmp_secret_path, None) {
                     Ok(()) => {
-                        println!("provisioned yubikey {k}, member {m}");
+                        println!("Provisioned yubikey {k}, operator {m}");
                         break;
                     }
                     Err(e) => {
-                        eprintln!("provisioning failed for yubikey {k}, member {m}, {e:?}");
+                        eprintln!("provisioning failed for yubikey {k}, operator {m}, {e:?}");
                         continue;
                     }
                 }
@@ -50,15 +49,15 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
         if cfg.include_secrets {
             let secret_path = cfg.out.join(format!("{m}.secret"));
             fs::copy(&tmp_secret_path, &secret_path)?;
-            println!("kept {}", secret_path.display())
+            println!("Kept {}", secret_path.display())
         } else {
-            println!("secret for member {m} stayed in tmp/secrets and was removed)");
+            println!("Secret for operator {m} stayed in tmp/secrets and was removed)");
         }
 
         // tmp_dir drops out of scope here and is therefore removed
     }
 
-    println!("all members provisioned");
+    println!("All operator yubikeys provisioned!");
     Ok(())
 }
 

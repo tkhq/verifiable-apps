@@ -12,15 +12,15 @@ use crate::{run, Config};
     about = "Offline Yubikey provisioning ceremony orchestrator"
 )]
 struct Args {
-    /// Number of members
+    /// Number of operators
     #[arg(long)]
-    members: usize,
+    num_operators: usize,
 
-    /// Keys per member (default: 3)
+    /// Keys per operator (default: 3)
     #[arg(long, default_value_t = 3)]
-    keys_per_member: usize,
+    keys_per_operator: usize,
 
-    /// Output root (member subdirs created inside)
+    /// Output root
     #[arg(long)]
     out: PathBuf,
 
@@ -38,8 +38,8 @@ impl CLI {
     pub fn execute() {
         let args = Args::parse();
         let cfg = Config {
-            members: args.members,
-            keys_per_member: args.keys_per_member,
+            num_operators: args.num_operators,
+            keys_per_operator: args.keys_per_operator,
             out: args.out,
             include_secrets: args.include_secrets,
         };
