@@ -37,7 +37,7 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
-        let tmp_dir = TempDir::new("secrets").unwrap();
+        let tmp_dir = TempDir::new("reshard-secrets").unwrap();
         let tmp_secret_path = tmp_dir.path().join(format!("{m}.secret"));
 
         generate_file_key(&tmp_secret_path, &pub_path);
@@ -46,7 +46,7 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
         for k in 1..=cfg.keys_per_operator {
             let prompt = format!("Please insert yubikey {k} for operator {m}. Are you ready?");
             while !confirm_yes(&prompt, false)? {
-                println!("Oops that wasn't correct. Have you recently 420'd?");
+                println!("Oops that wasn't correct.");
             }
 
             loop {
@@ -71,7 +71,7 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
             println!("Secret for operator {m} stayed in tmp/secrets and was removed)");
         }
 
-        // tmp_dir drops out of scope here and is therefore removed
+        drop(tmp_dir) // tmp_dir drops out of scope here and is therefore removed but making it explicit
     }
 
     println!("All operator yubikeys provisioned!");

@@ -16,7 +16,7 @@ struct Args {
     #[arg(long)]
     num_operators: usize,
 
-    /// Keys per operator (default: 3)
+    /// Keys per operator
     #[arg(long, default_value_t = 3)]
     keys_per_operator: usize,
 
@@ -28,8 +28,6 @@ struct Args {
     #[arg(long)]
     include_secrets: bool,
 }
-
-impl Args {}
 
 /// Provision binary command line interface.
 pub struct CLI;
