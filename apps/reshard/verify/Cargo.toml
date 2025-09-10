@@ -1,0 +1,8 @@
+[package]
+name = "reshard_verify"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+clap = { workspace = true }

@@ -2251,6 +2251,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "reshard_verify"
+version = "0.1.0"
+dependencies = [
+ "clap",
+]
+
+[[package]]
 name = "rfc6979"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

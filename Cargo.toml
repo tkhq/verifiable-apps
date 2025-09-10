@@ -10,6 +10,7 @@ members = [
 	"apps/reshard/app",
 	"apps/reshard/host",
 	"apps/reshard/provision",
+	"apps/reshard/verify",
 	"common/host_primitives",
 	"common/health_check",
 	"e2e"
@@ -49,3 +50,4 @@ codegen = { path = "common/codegen" }
 reshard_app = { path = "apps/reshard/app" }
 reshard_host = { path = "apps/reshard/host" }
 reshard_provision = { path = "apps/reshard/provision" }
+reshard_verify = { path = "apps/reshard/verify" }
