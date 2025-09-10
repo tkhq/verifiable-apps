@@ -1,0 +1,34 @@
+FROM stagex/pallet-rust:sx2025.06.0@sha256:740b9ed5f2a897d45cafdc806976d84231aa50a64998610750b42a48f8daacab AS rust
+FROM stagex/pcsc-lite:sx2024.03.0@sha256:e720e1795706c7c8c1db14bf730b10521e3ff42e4bed90addc590f7446aac8af AS pcsc-lite
+
+FROM scratch AS base
+COPY --from=pcsc-lite . /
+COPY --from=rust . /
+
+# Rust configuration
+ENV RUSTFLAGS='-C target-feature=+crt-static'
+ENV CARGOFLAGS='--target x86_64-unknown-linux-musl --no-default-features --locked --release'
+
+# Directory for Rust artifacts
+ENV RELEASE_DIR=/target/x86_64-unknown-linux-musl/release
+
+ENV PCSC_LIB_NAME=static=pcsclite
+
+# Load Rust sources
+ADD . .
+
+# pre-fetch all workspace deps; we need to them to build with `--network=none`
+RUN cargo -V && rustc -V && cargo fetch
+RUN pkg-config --modversion libpcsclite
+
+WORKDIR /apps/reshard/provision
+RUN --network=none <<-EOF
+    set -eu
+    cargo build ${CARGOFLAGS}
+    mkdir -p /rootfs
+    mv ${RELEASE_DIR}/reshard_provision /rootfs/
+EOF
+
+FROM scratch AS package
+COPY --from=base /rootfs/. .
+ENTRYPOINT ["/reshard_provision"]

@@ -9,6 +9,7 @@ rust.missing_docs = "warn"
 members = [
 	"apps/reshard/app",
 	"apps/reshard/host",
+	"apps/reshard/provision",
 	"common/host_primitives",
 	"common/health_check",
 	"e2e"
@@ -30,14 +31,16 @@ serde_json = { version = "1", default-features = false }
 clap = { version = "4.5", features = ["derive", "env", "std"], default-features = false }
 tempdir = { version = "0.3", default-features = false }
 futures = { version = "0.3", default-features = false }
+dialoguer = { version = "0.12", default-features = false }
 
 # QOS
-qos_core = { git = "https://github.com/tkhq/qos.git", rev = "38db2841cae036eefce0dcb6d0cca80f93a91e98", default-features = false }
-qos_crypto = { git = "https://github.com/tkhq/qos.git", rev = "38db2841cae036eefce0dcb6d0cca80f93a91e98", default-features = false }
-qos_hex = { git = "https://github.com/tkhq/qos.git", rev = "38db2841cae036eefce0dcb6d0cca80f93a91e98", default-features = false }
-qos_p256 = { git = "https://github.com/tkhq/qos.git", rev = "38db2841cae036eefce0dcb6d0cca80f93a91e98", default-features = false }
-qos_nsm = { git = "https://github.com/tkhq/qos.git", rev = "38db2841cae036eefce0dcb6d0cca80f93a91e98", default-features = false }
-qos_test_primitives = { git = "https://github.com/tkhq/qos.git", rev = "38db2841cae036eefce0dcb6d0cca80f93a91e98", default-features = false }
+qos_core = { git = "https://github.com/tkhq/qos.git", rev = "0060f65732115322620f094f63d7a81069169148", default-features = false }
+qos_crypto = { git = "https://github.com/tkhq/qos.git", rev = "0060f65732115322620f094f63d7a81069169148", default-features = false }
+qos_hex = { git = "https://github.com/tkhq/qos.git", rev = "0060f65732115322620f094f63d7a81069169148", default-features = false }
+qos_p256 = { git = "https://github.com/tkhq/qos.git", rev = "0060f65732115322620f094f63d7a81069169148", default-features = false }
+qos_nsm = { git = "https://github.com/tkhq/qos.git", rev = "0060f65732115322620f094f63d7a81069169148", default-features = false }
+qos_test_primitives = { git = "https://github.com/tkhq/qos.git", rev = "0060f65732115322620f094f63d7a81069169148", default-features = false }
+qos_client = { git = "https://github.com/tkhq/qos.git", rev = "0060f65732115322620f094f63d7a81069169148", default-features = false }
 
 # Local
 host_primitives = { path = "common/host_primitives" }
@@ -45,3 +48,4 @@ health_check = { path = "common/health_check" }
 codegen = { path = "common/codegen" }
 reshard_app = { path = "apps/reshard/app" }
 reshard_host = { path = "apps/reshard/host" }
+reshard_provision = { path = "apps/reshard/provision" }
