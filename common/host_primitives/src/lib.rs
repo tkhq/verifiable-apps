@@ -195,6 +195,10 @@ pub fn spawn_queue_consumer<Codec, Req, Resp>(
                 send_proxy_request::<Codec, _, _>(queue_msg.request, Arc::clone(&client)).await;
 
             if let Err(e) = queue_msg.response_tx.send(enclave_resp) {
+                // This happens when the receiver (inside the tonic handler) is de-allocated. This can
+                // happen if the request timeout is reached or tonic handler exits for some other reason
+                // We continue here to ensure we can keep consuming messages from the queue.
+                // See <https://docs.rs/tokio/latest/tokio/sync/oneshot/struct.Sender.html#impl-Sender%3CT%3E>
                 eprint!("queue consumer failed to send to caller: {e:?}")
             };
         }
