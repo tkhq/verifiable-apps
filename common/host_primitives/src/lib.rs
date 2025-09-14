@@ -93,17 +93,17 @@ where
         }
     }
 
-    /// Send a message to the enclave and wait for the response
-    pub async fn send(&self, req: Req) -> Result<Resp, tonic::Status> {
-        send_queue_msg::<Codec, _, _>(req, &self.queue_tx).await
+    /// Execute a call against the enclave app and wait for the response.
+    pub async fn call(&self, req: Req) -> Result<Resp, tonic::Status> {
+        queued_proxy_call::<Codec, _, _>(req, &self.queue_tx).await
     }
 }
 
-/// Send a message to secure app via socket connection.
+/// Enqueue a proxied call to the enclave app and wait for its response.
 ///
 /// You likely do not want to transform the error since we want to preserve the
 /// unavailable error code to indicate the enclave queue is full.
-pub async fn send_queue_msg<Codec, Req, Resp>(
+pub async fn queued_proxy_call<Codec, Req, Resp>(
     request: Req,
     queue_tx: &tokio::sync::mpsc::Sender<Box<EnclaveQueueMsg<Req, Resp>>>,
 ) -> Result<Resp, tonic::Status>
@@ -129,8 +129,8 @@ where
     })?
 }
 
-/// Send a message to a secure app via QOS proxy.
-pub async fn send_proxy_request<Codec, Req, Resp>(
+/// Execute a proxied call against the enclave app.
+pub async fn proxy_call<Codec, Req, Resp>(
     request: Req,
     client: Arc<qos_core::client::Client>,
 ) -> Result<Resp, tonic::Status>
@@ -192,7 +192,7 @@ pub fn spawn_queue_consumer<Codec, Req, Resp>(
         loop {
             let queue_msg = queue_rx.recv().await.expect("failed to receive message");
             let enclave_resp =
-                send_proxy_request::<Codec, _, _>(queue_msg.request, Arc::clone(&client)).await;
+                proxy_call::<Codec, _, _>(queue_msg.request, Arc::clone(&client)).await;
 
             if let Err(e) = queue_msg.response_tx.send(enclave_resp) {
                 // This happens when the receiver (inside the tonic handler) is de-allocated. This can

@@ -70,7 +70,7 @@ impl ReshardService for Host {
         &self,
         _: tonic::Request<RetrieveReshardRequest>,
     ) -> std::result::Result<tonic::Response<RetrieveReshardResponse>, Status> {
-        let app_response = self.enclave.send(ReshardRequest::RetrieveBundle).await?;
+        let app_response = self.enclave.call(ReshardRequest::RetrieveBundle).await?;
 
         let ReshardResponse::Bundle(bundle) = app_response else {
             return Err(Status::internal("received invalid response from app"));
@@ -90,7 +90,7 @@ struct Health {
 #[tonic::async_trait]
 impl AppHealthCheckable for Health {
     async fn app_health_check(&self) -> Result<tonic::Response<AppHealthResponse>, tonic::Status> {
-        let app_response = self.enclave.send(ReshardRequest::HealthRequest).await?;
+        let app_response = self.enclave.call(ReshardRequest::HealthRequest).await?;
         if ReshardResponse::Health != app_response {
             return Err(Status::internal("received invalid response from app"));
         }
