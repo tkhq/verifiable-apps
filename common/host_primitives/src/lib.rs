@@ -5,6 +5,7 @@ use std::{fmt::Debug, marker::PhantomData};
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use prost::Message;
+use qos_core::protocol::ProtocolError;
 use qos_core::{
     io::{TimeVal, TimeValLike},
     protocol::{msg::ProtocolMsg, ENCLAVE_APP_SOCKET_CLIENT_TIMEOUT_SECS},
@@ -156,6 +157,14 @@ where
 
         let encoded_app_response = match qos_response {
             ProtocolMsg::ProxyResponse { data } => data,
+            ProtocolMsg::ProtocolErrorResponse(ProtocolError::AppClientRecvTimeout) => {
+                // TODO: this error should be optionally trackable via metrics handle injection
+                // https://linear.app/turnkey/issue/INF-70/add-way-to-inject-prom-handle-for-tracking-appclientrecvtimeout
+                let msg =
+                    "AppClientRecvTimeout: QOS server app client time out: app likely panicked";
+                eprintln!("{msg}");
+                return Err(Status::internal(msg));
+            }
             other => {
                 return Err(Status::internal(format!(
                     "Expected a ProtocolMsg::ProxyResponse but got {other:?}"
@@ -199,7 +208,7 @@ pub fn spawn_queue_consumer<Codec, Req, Resp>(
                 // happen if the request timeout is reached or tonic handler exits for some other reason
                 // We continue here to ensure we can keep consuming messages from the queue.
                 // See <https://docs.rs/tokio/latest/tokio/sync/oneshot/struct.Sender.html#impl-Sender%3CT%3E>
-                eprint!("queue consumer failed to send to caller: {e:?}")
+                eprintln!("queue consumer failed to send to caller: {e:?}")
             };
         }
     });
