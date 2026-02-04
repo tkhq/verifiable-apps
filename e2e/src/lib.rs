@@ -12,8 +12,37 @@ use borsh::to_vec as borsh_to_vec;
 use reshard_host::generated::reshard::reshard_service_client::ReshardServiceClient;
 
 use qos_core::protocol::services::boot::{Manifest, ManifestEnvelope};
-use tempdir::TempDir;
 use tonic::transport::Channel;
+
+/// A temporary directory that is removed on drop.
+struct TempDir(PathBuf);
+
+impl TempDir {
+    fn new(prefix: &str) -> std::io::Result<Self> {
+        let name = format!(
+            "{}-{}-{}",
+            prefix,
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        );
+        let path = PathBuf::from("/tmp").join(name);
+        fs::create_dir_all(&path)?;
+        Ok(Self(path))
+    }
+
+    fn path(&self) -> &Path {
+        &self.0
+    }
+}
+
+impl Drop for TempDir {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.0);
+    }
+}
 
 pub mod qos_simulator;
 
@@ -48,7 +77,7 @@ where
     F: Fn(TestArgs) -> T,
     T: std::future::Future<Output = ()>,
 {
-    let tmp_dir = TempDir::new("testharness").unwrap();
+    let tmp_dir = TempDir::new("testharness").expect("create temp dir");
 
     // Socket paths
     let app_sock = tmp_dir.path().join(".reshard.app.sock");
