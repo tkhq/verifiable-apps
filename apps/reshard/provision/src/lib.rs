@@ -2,8 +2,40 @@ pub mod cli;
 
 use dialoguer::{theme::ColorfulTheme, Confirm};
 use qos_client::cli::{advanced_provision_yubikey, generate_file_key};
-use std::{fs, path::PathBuf};
-use tempdir::TempDir;
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
+
+/// A temporary directory that is removed on drop.
+struct TempDir(PathBuf);
+
+impl TempDir {
+    fn new(prefix: &str) -> std::io::Result<Self> {
+        let name = format!(
+            "{}-{}-{}",
+            prefix,
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        );
+        let path = PathBuf::from("/tmp").join(name);
+        fs::create_dir_all(&path)?;
+        Ok(Self(path))
+    }
+
+    fn path(&self) -> &Path {
+        &self.0
+    }
+}
+
+impl Drop for TempDir {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.0);
+    }
+}
 
 /// Public configuration passed in from the CLI (or tests).
 #[derive(Debug, Clone)]
@@ -37,7 +69,7 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
-        let tmp_dir = TempDir::new("reshard-secrets").unwrap();
+        let tmp_dir = TempDir::new("reshard-secrets").expect("create temp dir");
         let tmp_secret_path = tmp_dir.path().join(format!("{m}.secret"));
 
         generate_file_key(&tmp_secret_path, &pub_path);

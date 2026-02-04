@@ -29,7 +29,6 @@ tonic-reflection = { version = "0.14" }
 serde = { version = "1.0", default-features = false}
 serde_json = { version = "1", default-features = false }
 clap = { version = "4.5", features = ["derive", "env", "std"], default-features = false }
-tempdir = { version = "0.3", default-features = false }
 futures = { version = "0.3", default-features = false }
 dialoguer = { version = "0.12", default-features = false }
 
