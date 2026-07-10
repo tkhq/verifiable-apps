@@ -1,5 +1,13 @@
 # Turnkey Verifiable Apps
 
+## :warning: Archived & Deprecated
+
+This repository is deprecated and has been archived.
+
+- No new features, bug fixes, or security updates
+- Existing code is kept for historical and reference purposes only.
+- Please do not use this repository for new production workloads.
+
 ## Repository Layout
 
 ```
